@@ -5,6 +5,8 @@ Used for systems that require easy edit on the Database
 
 *This project is still just a concept, some diagrams and detailed explanation can be found in the `docs` directory*
 
+![Diagram image](docs/db_library_diagram.png)
+
 ## Method to implement this
 You could probably tell, it is not done yet
 I'm still looking over the recourses to build this. some possible choices are:
