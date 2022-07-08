@@ -2,8 +2,9 @@ from db import DB
 import pytest
 
 class TestDB:
-	def test_db_connection(self):
-		demo_db_path = "demo.db"
+	def test_db_connection(self, tmp_path):
+		tmp_path.mkdir()
+		demo_db_path = tmp_path / "demo.db"
 		test_db = DB(demo_db_path)
 
 	def test_creating_model(self):
