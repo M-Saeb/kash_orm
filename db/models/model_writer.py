@@ -4,6 +4,10 @@ from sqlalchemy.types import TypeEngine
 from sqlalchemy.sql.schema import MetaData
 
 class ModelCreator:
+	"""
+		This class handles creating the ORM object, 
+		writing it on the database happens from the BD class
+	"""
 	def __init__(self, model_name) -> None:
 		self.model_name =  model_name
 		self.columns = []
@@ -25,6 +29,26 @@ class ModelCreator:
 		new_table = Table(
 			self.model_name,
 			self.metadata,
-			*self.columns
+			*self.columns,
 		)
 		return new_table
+
+class ModelUpdater:
+	""" This class creates SQL queries corresponding the requested operation """
+
+	def __init__(self, model_name):
+		self.model_name =  model_name
+
+	def create_columns(self, **columns) -> list:
+		queries = []
+		for col_name, col_dict in columns.items():
+			col_type = col_dict["type"].upper()
+			query_line = f'ALTER TABLE {self.model_name} ADD {col_name} {col_type};'
+			queries.append(query_line)
+		return queries
+
+	def update_columns(self):
+		pass
+
+	def delete_columns(self, ):
+		pass
