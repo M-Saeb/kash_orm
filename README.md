@@ -11,3 +11,10 @@ I'm still looking over the recourses to build this. some possible choices are:
 - SQL Alchemy with autoload (link)[https://www.blog.pythonlibrary.org/2010/09/10/sqlalchemy-connecting-to-pre-existing-databases/] and (link2)[https://gtpedrosa.github.io/blog/using-sqlalchemy-to-navigate-an-existing-database/]
 - SQL Alchemy with automp (link)[https://docs.sqlalchemy.org/en/14/orm/extensions/automap.html] (this seems like the best approach)
 - BIGSQL which is a python project I found on Github(link)[https://github.com/wabscale/bigsql]
+
+
+## Usefull Links
+some usefull links are:
+- SQLAlchemy AuthMap (link)[https://docs.sqlalchemy.org/en/14/orm/extensions/automap.html]
+- SQLAlchemy Class mapping API (link)[https://docs.sqlalchemy.org/en/14/orm/mapping_api.html#sqlalchemy.orm.registry.map_imperatively]
+
