@@ -28,7 +28,7 @@ class DB:
 				]
 		"""
 		model_obj = ModelCreator(model_name)
-		model_obj.add_metadata(self._mapper_registry.metadata)
+		model_obj.set_metadata(self._mapper_registry.metadata)
 		for col_name, col_dict in columns.items():
 			type_name = col_dict["type"]
 			kwargs = col_dict.get("kwargs", {})
@@ -41,7 +41,7 @@ class DB:
 				column_type=type_class,
 				**kwargs
 			)
-		table_obj = model_obj.return_table_object()
+		table_obj = model_obj.generate_table_class()
 		model_class = type(model_name, (self._base, object) , {"__tablename__": model_name} )
 		self._mapper_registry.map_imperatively(model_class, table_obj)
 		self._mapper_registry.metadata.create_all()

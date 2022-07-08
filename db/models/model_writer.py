@@ -6,13 +6,13 @@ from sqlalchemy.sql.schema import MetaData
 class ModelCreator:
 	"""
 		This class handles creating the ORM object, 
-		writing it on the database happens from the BD class
+		writing it on the database happens from the DB class
 	"""
 	def __init__(self, model_name) -> None:
 		self.model_name =  model_name
 		self.columns = []
 
-	def add_metadata(self, metadata_object: MetaData):
+	def set_metadata(self, metadata_object: MetaData):
 		self.metadata = metadata_object
 
 	def add_column(self, column_name: str, column_type: TypeEngine, **kwargs):
@@ -22,7 +22,7 @@ class ModelCreator:
 	def set_columns(self, columns: List[Column]):
 		self.columns = columns
 
-	def return_table_object(self):
+	def generate_table_class(self):
 		primary_key_is_defined = any( map(lambda col: getattr(col, "primary_key", False), self.columns) ) 
 		if not primary_key_is_defined:
 			raise ValueError("No primary key column was provided")
@@ -39,7 +39,7 @@ class ModelUpdater:
 	def __init__(self, model_name):
 		self.model_name =  model_name
 
-	def create_columns(self, **columns) -> list:
+	def create_columns(self, **columns) -> List[str]:
 		queries = []
 		for col_name, col_dict in columns.items():
 			col_type = col_dict["type"].upper()
