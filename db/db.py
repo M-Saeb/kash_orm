@@ -8,7 +8,7 @@ from .models import ModelCreator, ModelReader, ModelUpdater
 class DB:
 	def __init__(self, db_path) -> None:
 		self._base = automap_base()
-		self._egnine = create_engine("sqlite:///%s" % (db_path))
+		self._egnine = create_engine(db_path)
 		self._connection = self._egnine.connect()
 		self._base.prepare(autoload_with=self._egnine)
 		self._session = Session(self._egnine)
@@ -51,7 +51,8 @@ class DB:
 	def update_model(self,
 		model_name,
 		op="create_columns",
-		**columns
+		*args,
+		**kwargs
 	) -> None:
 		"""
 			update database model according to the given params
@@ -59,14 +60,19 @@ class DB:
 			:param `op`: opertaion to preform
 			:param `columns`: takes a list of columns to create in the table
 		"""
-		assert len(columns) > 0, "No columns were provided for the operation"
+		assert len(kwargs) > 0 or len(args), "No args or kwargs were provided for the operation"
 		model_updater = ModelUpdater(model_name)
 		op_func = getattr(model_updater, op, None)
 		if not op_func:
 			raise ValueError(f"There request update operation {op} was not found in ModeUpdater")
-		op_queries = op_func(**columns)
-		for query in op_queries:
-			self._connection.execute(query)
+		op_queries = op_func(*args, **kwargs)
+		if isinstance(op_queries, str):
+			self._connection.execute(op_queries)
+		elif isinstance(op_queries, list):
+			for query in op_queries:
+				self._connection.execute(query)
+		else:
+			raise ValueError(f"result of type {type(op_queries)} is not handled yet")
 		
 	def delete_model(self, model_name):
 		pass

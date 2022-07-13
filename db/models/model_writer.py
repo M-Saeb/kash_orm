@@ -39,7 +39,8 @@ class ModelUpdater:
 	def __init__(self, model_name):
 		self.model_name =  model_name
 
-	def create_columns(self, **columns) -> List[str]:
+	def create_columns(self, *args, **columns) -> List[str]:
+		assert len(args) == 0, "create_columns() doesn't take argument"
 		queries = []
 		for col_name, col_dict in columns.items():
 			col_type = col_dict["type"].upper()
@@ -47,8 +48,20 @@ class ModelUpdater:
 			queries.append(query_line)
 		return queries
 
-	def update_columns(self):
-		pass
+	def update_columns(self, *columns, **kwargs):
+		queries = []
+		for col_name in columns:
+			query_line = f'ALTER TABLE {self.model_name} DROP COLUMN {col_name};'
+			queries.append(query_line)
+		return queries
 
-	def delete_columns(self, ):
-		pass
+	def delete_columns(self, *columns, **kwargs):
+		assert len(kwargs) == 0, "delete_columns() doesn't take key arguments"
+		# cols_string = ", ".join(columns)
+		# full_query = f'ALTER TABLE {self.model_name} DROP COLUMN {cols_string};'
+		queries = []
+		for col_name in columns:
+			query_line = f'ALTER TABLE {self.model_name} DROP COLUMN {col_name};'
+			queries.append(query_line)
+		return queries
+		# return full_query

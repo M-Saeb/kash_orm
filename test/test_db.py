@@ -1,14 +1,14 @@
-from pyexpat import model
 from db import DB
 from sqlalchemy import Column, Integer, String
+import testing.postgresql
 import pytest
 
 class TestDB:
 
 	def _creat_db_engine(self, db_path) -> DB:
-		demo_db_path = db_path / "demo.db"
-		test_db = DB(demo_db_path)
-		return test_db
+		with testing.postgresql.Postgresql() as postgresql:
+			test_db = DB(postgresql)
+			return test_db
 
 	def _create_model(self, db: DB):
 		model = db.create_model("test_table",
@@ -60,7 +60,14 @@ class TestDB:
 		assert points_column.name == "points"
 
 	def test_updating_model_deleting_columns(self, tmp_path):
-		pass
+		model_name = "test_table"
+		# test_db = self._creat_db_engine(tmp_path)
+		# test_model = self._create_model(test_db)
+		# test_db.update_model(model_name, "delete_columns", "name", "age")
+		# model_class = test_db.get_model(model_name)
+		# columns = model_class.get_columns()
+		# assert len(columns) == 1
+		# assert columns[0].name == "id"
 
 	def test_updating_model_updating_existing_columns(self, tmp_path):
 		pass
