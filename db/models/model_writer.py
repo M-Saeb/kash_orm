@@ -24,8 +24,7 @@ class ModelCreator:
 
 	def generate_table_class(self):
 		primary_key_is_defined = any( map(lambda col: getattr(col, "primary_key", False), self.columns) ) 
-		if not primary_key_is_defined:
-			raise ValueError("No primary key column was provided")
+		assert primary_key_is_defined, "No primary key column was provided"
 		new_table = Table(
 			self.model_name,
 			self.metadata,
@@ -34,34 +33,42 @@ class ModelCreator:
 		return new_table
 
 class ModelUpdater:
-	""" This class creates SQL queries corresponding the requested operation """
+	"""
+		This class hold all the model updater functions/operations,
+		each function returns a query to run from the DB class
+	"""
 
 	def __init__(self, model_name):
 		self.model_name =  model_name
 
 	def create_columns(self, *args, **columns) -> List[str]:
-		assert len(args) == 0, "create_columns() doesn't take argument"
-		queries = []
+		assert len(args) == 0, "create_columns() doesn't take list arguments"
+		assert len(columns) > 0, "no key arguments were provided"
+		query_str = f'ALTER TABLE {self.model_name} '
 		for col_name, col_dict in columns.items():
 			col_type = col_dict["type"].upper()
-			query_line = f'ALTER TABLE {self.model_name} ADD {col_name} {col_type};'
-			queries.append(query_line)
-		return queries
+			query_str += f'ADD COLUMN {col_name} {col_type}, '
+		query_str = query_str[:-2] + ";"
+		return query_str
 
-	def update_columns(self, *columns, **kwargs):
-		queries = []
-		for col_name in columns:
-			query_line = f'ALTER TABLE {self.model_name} DROP COLUMN {col_name};'
-			queries.append(query_line)
-		return queries
+	def update_columns(self, *args, **kwargs):
+		assert len(args) == 0, "update_columns() doesn't take list arguments"
+		assert len(kwargs) > 0, "no key arguments were provided"
+		query_str = f'ALTER TABLE {self.model_name} '
+		for col_name, to_update_dict in kwargs.items():
+			assert isinstance(to_update_dict, dict), "the value for update_columns() kwargs must be dictionaries"
+			assert to_update_dict.get("update"), f"This update dict ({to_update_dict}) is not handled yet"
+			new_data_type = to_update_dict["type"].upper()
+			query_str += f"ALTER COLUMN {col_name} TYPE {new_data_type}, "
+
+		query_str = query_str[:-2] + ";"
+		return query_str
 
 	def delete_columns(self, *columns, **kwargs):
+		assert len(columns) > 0, "to arguments/column names were provided"
 		assert len(kwargs) == 0, "delete_columns() doesn't take key arguments"
-		# cols_string = ", ".join(columns)
-		# full_query = f'ALTER TABLE {self.model_name} DROP COLUMN {cols_string};'
-		queries = []
+		query_str = f'ALTER TABLE {self.model_name} '
 		for col_name in columns:
-			query_line = f'ALTER TABLE {self.model_name} DROP COLUMN {col_name};'
-			queries.append(query_line)
-		return queries
-		# return full_query
+			query_str += f'DROP COLUMN {col_name}, '
+		query_str = query_str[:-2] + ";"
+		return query_str

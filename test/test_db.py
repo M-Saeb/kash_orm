@@ -1,36 +1,41 @@
 from db import DB
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, VARCHAR
 import testing.postgresql
 import pytest
 
 class TestDB:
 
-	def _creat_db_engine(self, db_path) -> DB:
-		with testing.postgresql.Postgresql() as postgresql:
-			test_db = DB(postgresql)
-			return test_db
+	@pytest.fixture
+	def db_cls(self, postgresql) -> DB:
+		db_cls = DB(host=postgresql.info.host, dbname=postgresql.info.dbname, port=postgresql.info.port)
+		return db_cls
 
-	def _create_model(self, db: DB):
-		model = db.create_model("test_table",
+	@pytest.fixture
+	def model_name(self) -> str:
+		return "test_model"
+
+	@pytest.fixture
+	def db_cls_with_test_model(self, db_cls: DB, model_name: str) -> DB:
+		db_cls.create_model(model_name,
 			id={"type": "Integer", "kwargs": {"primary_key": True}},
 			name={"type": "String"},
 			age={"type": "String"},
 		)
-		return model
+		return db_cls
 
-	def test_db_connection(self, tmp_path):
-		test_db = self._creat_db_engine(tmp_path)
+	def test_db_connection(self, db_cls: DB):
+		test_db = db_cls
 
-	def test_creating_model(self, tmp_path):
-		test_db = self._creat_db_engine(tmp_path)
-		test_model = self._create_model(test_db)
-		print(test_model)
-		assert test_model, "Something went wrong when creating a model"
+	def test_creating_model(self, db_cls_with_test_model: DB):
+		print(db_cls_with_test_model)
+		assert db_cls_with_test_model, "Something went wrong when creating a model"
 
-	def test_reading_model(self, tmp_path):
-		test_db = self._creat_db_engine(tmp_path)
-		test_model = self._create_model(test_db)
-		test_model = test_db.get_model("test_table")
+	def test_reading_model(
+		self,
+		db_cls_with_test_model: DB,
+		model_name
+	):
+		test_model = db_cls_with_test_model.get_model(model_name)
 		print(test_model)
 		model_columns = test_model.get_columns()
 		print("model_columns", model_columns)
@@ -42,34 +47,50 @@ class TestDB:
 		assert name_column.name == "name"
 		assert type_column.name == "age"
 
-	def test_updating_model_createing_new_columns(self, tmp_path):
-		model_name = "test_table"
-		test_db = self._creat_db_engine(tmp_path)
-		test_model = self._create_model(test_db)
-		test_db.update_model(
+	def test_updating_model_createing_new_columns(
+		self,
+		db_cls_with_test_model: DB,
+		model_name
+	):
+		db_cls_with_test_model.update_model(
 			model_name=model_name,
 			op="create_columns",
-			id_number={"type": "String"},
-			points={"type": "String"}
+			id_number={"type": "TEXT"},
+			points={"type": "TEXT"}
 		)
-		model_class = test_db.get_model(model_name)
+		model_class = db_cls_with_test_model.get_model(model_name)
 		columns = model_class.get_columns()
 		id_column = columns[3]
 		points_column = columns[4]
+		assert len(columns) == 5
 		assert id_column.name == "id_number"
 		assert points_column.name == "points"
 
-	def test_updating_model_deleting_columns(self, tmp_path):
-		model_name = "test_table"
-		# test_db = self._creat_db_engine(tmp_path)
-		# test_model = self._create_model(test_db)
-		# test_db.update_model(model_name, "delete_columns", "name", "age")
-		# model_class = test_db.get_model(model_name)
-		# columns = model_class.get_columns()
-		# assert len(columns) == 1
-		# assert columns[0].name == "id"
+	def test_updating_model_deleting_columns(
+		self,
+		db_cls_with_test_model: DB,
+		model_name
+	):
+		db_cls_with_test_model.update_model(model_name, "delete_columns", "name", "age")
+		model_class = db_cls_with_test_model.get_model(model_name)
+		columns = model_class.get_columns()
+		assert len(columns) == 1
+		assert columns[0].name == "id"
 
-	def test_updating_model_updating_existing_columns(self, tmp_path):
+	def test_updating_model_updating_existing_columns_changing_column_type(
+		self,
+		db_cls_with_test_model: DB,
+		model_name
+	):
+		db_cls = db_cls_with_test_model
+		db_cls.update_model(model_name, "update_columns", name={"type": "VARCHAR"})
+		model_obj = db_cls.get_model(model_name)
+		columns = model_obj.get_columns()
+		name_column = columns[1]
+		assert isinstance(name_column.type, VARCHAR)
+		print(name_column)
+
+	def test_updating_model_updating_existing_columns_renaming(self, db_cls: DB):
 		pass
 
 	def test_deleting_model(self):
