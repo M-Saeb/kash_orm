@@ -4,7 +4,7 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session, registry
 from sqlalchemy import create_engine, Column
 from .models import ModelCreator, ModelReader, ModelUpdater
-
+from .fields import BaseField, String, Integer
 class DB:
 	def __init__(self, host, dbname, port=5432) -> None:
 		self._base = automap_base()
@@ -30,19 +30,11 @@ class DB:
 		"""
 		model_creator_obj = ModelCreator(model_name)
 		model_creator_obj.set_metadata(self._mapper_registry.metadata)
-		for col_name, col_dict in columns.items():
-			assert isinstance(col_dict, dict), f"the value for {col_name} must be dict"
-			assert col_dict.get("type"), f"No 'type' key was provided in the dict for {col_name}"
-			type_name = col_dict["type"]
-			kwargs = col_dict.get("kwargs", {})
-			type_class = getattr(sqlalchemy, type_name, None)
-			if not type_class:
-				raise KeyError(f"The given column name {type_name} does not exist")
-		
+		for col_name, col_cls in columns.items():
+			assert isinstance(col_cls, BaseField), f"the value for {col_name} must be of type KASH ORM fields"
 			model_creator_obj.add_column(
-				column_name=col_name,
-				column_type=type_class,
-				**kwargs
+				col_name=col_name,
+				col_cls=col_cls,
 			)
 		table_cls = model_creator_obj.generate_table_class()
 		model_cls = type(model_name, (self._base, ) , {"__tablename__": model_name} )
@@ -68,8 +60,7 @@ class DB:
 		assert len(kwargs) or len(args), "No args or kwargs were provided for the operation"
 		model_updater_cls = ModelUpdater(model_name)
 		op_func = getattr(model_updater_cls, op, None)
-		if not op_func:
-			raise ValueError(f"There request update operation {op} was not found in ModeUpdater")
+		assert op_func,f"There request update operation {op} was not found in ModeUpdater"
 		op_queries = op_func(*args, **kwargs)
 		assert op_queries, f"the updater function {op_func} didn't resturn any query"
 		self._connection.execute(op_queries)
