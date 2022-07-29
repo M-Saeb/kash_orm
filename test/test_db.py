@@ -21,7 +21,6 @@ class TestDB:
 		)
 		return db_cls
 
-
 	def test_db_connection(self, db_cls: DB):
 		test_db = db_cls
 
@@ -90,7 +89,6 @@ class TestDB:
 		model_obj = db_cls.get_model(model_name)
 		columns = model_obj.get_columns()
 		name_column = columns[1]
-		# assert isinstance(name_column.type, VARCHAR)
 		print(name_column)
 
 	def test_updating_model_updating_existing_columns_renaming(self, db_cls: DB):

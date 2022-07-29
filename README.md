@@ -1,13 +1,15 @@
+*This is still underconstruction, so many of what's writting here is still not developed*
+
 # Kash ORM
+
 Build, edit and delete SQL tabels, And record on the run.
 KashORM allows to intreact with a datbase without need to definning static models for it.
 Used for systems that require editing databased on the run
 
-*This is still underconstruction, so many of what's writting here is still not developed*
-
-## Structor
-![Diagram image](docs/db_library_diagram.png)
-- KashORM build on top of SQLAlchemy, in a way that standarize the code for all databases so that the user woudn't need to worry about the selected database
+## DB Library
+![Diagram image](docs/db/db_diagram.png)
+- The DB library is built with SQLAlchemy and it meant to work with PostgreSQL
+- As shown in the graph, there is no specific model defined. Instead, the library is built to create model from the SQL tables on the connected database
 
 
 ## Tests

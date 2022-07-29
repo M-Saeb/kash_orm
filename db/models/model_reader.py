@@ -6,8 +6,10 @@ class ModelReader:
 		return self._table_cls.columns._all_columns
 
 	def filter(self, *args):
+		""" Filter records """
 		pass
 
-	def create_record(self, **kwargs):
+	def create(self, **kwargs):
+		""" Create record """
 		pass
 		

@@ -19,14 +19,7 @@ class DB:
 		"""
 			Create models in the database 
 			:param `model_name`: the name of both the model & SQL table
-			:param `columns`: a list of dictionary for the tables columns in the following format:
-				[
-					{
-						"name": str, // column name
-						"type": TypeEgine, // column type (uses SQLAlchemy columns types)
-						"kwargs": {} // key argument that you want to pass to to the column
-					}, ...
-				]
+			:param `columns`: a dictionary of BaseField objects
 		"""
 		model_creator_obj = ModelCreator(model_name)
 		model_creator_obj.set_metadata(self._mapper_registry.metadata)
